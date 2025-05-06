@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Famous People Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-top: 50px;
+        }
+        .images-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+        }
+        .image-wrapper {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            cursor: pointer;
+        }
+        .person-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .correct {
+            background-color: rgba(76, 175, 80, 0.7);
+        }
+        .incorrect {
+            background-color: rgba(244, 67, 54, 0.7);
+        }
+        .overlay.visible {
+            opacity: 1;
+        }
+        .checkmark, .cross {
+            font-size: 100px;
+            color: white;
+        }
+        .person-name {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #333;
+        }
+        .score {
+            font-size: 24px;
+            color: #666;
+            margin-top: 20px;
+        }
+        .next-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: none;
+        }
+        .next-button:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="images-container">
+            <div class="image-wrapper" onclick="checkAnswer(0)">
+                <img src="{{ image1_url }}" alt="Famous Person 1" class="person-image">
+                <div class="overlay" id="overlay1">
+                    <span class="checkmark">✓</span>
+                </div>
+            </div>
+            <div class="image-wrapper" onclick="checkAnswer(1)">
+                <img src="{{ image2_url }}" alt="Famous Person 2" class="person-image">
+                <div class="overlay" id="overlay2">
+                    <span class="checkmark">✓</span>
+                </div>
+            </div>
+        </div>
+        <div class="person-name">{{ correct_person_name }}</div>
+        <div class="score">Score: <span id="score">0</span></div>
+        <button class="next-button" id="nextButton" onclick="nextQuestion()">Next Question</button>
+    </div>
+
+    <script>
+        let score = 0;
+        const correctAnswer = {{ correct_image_index }};
+        let answered = false;
+
+        function checkAnswer(selectedIndex) {
+            if (answered) return;
+            
+            answered = true;
+            const overlay1 = document.getElementById('overlay1');
+            const overlay2 = document.getElementById('overlay2');
+            const nextButton = document.getElementById('nextButton');
+
+            if (selectedIndex === correctAnswer) {
+                score += 1;
+                document.getElementById('score').textContent = score;
+                if (selectedIndex === 0) {
+                    overlay1.classList.add('correct', 'visible');
+                } else {
+                    overlay2.classList.add('correct', 'visible');
+                }
+            } else {
+                if (selectedIndex === 0) {
+                    overlay1.classList.add('incorrect', 'visible');
+                    overlay1.querySelector('.checkmark').textContent = '✗';
+                } else {
+                    overlay2.classList.add('incorrect', 'visible');
+                    overlay2.querySelector('.checkmark').textContent = '✗';
+                }
+            }
+
+            nextButton.style.display = 'inline-block';
+        }
+
+        function nextQuestion() {
+            // This will be handled by Django to load the next question
+            window.location.reload();
+        }
+    </script>
+</body>
+</html> 
