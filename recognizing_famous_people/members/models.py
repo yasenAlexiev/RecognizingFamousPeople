@@ -12,9 +12,22 @@ class FamousPerson(models.Model):
         ('hard', 'Hard'),
     ]
 
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ]
+
+    SKIN_COLOR_CHOICES = [
+        ('white', 'White'),
+        ('black', 'Black'),
+        ('asian', 'Asian'),
+    ]
+
     name = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='famous_people/')
+    image = models.ImageField()
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='male')
+    skin_color = models.CharField(max_length=10, choices=SKIN_COLOR_CHOICES, default='white')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
