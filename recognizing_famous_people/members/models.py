@@ -21,6 +21,7 @@ class FamousPerson(models.Model):
         ('white', 'White'),
         ('black', 'Black'),
         ('asian', 'Asian'),
+        ('brown', 'Brown'),
     ]
 
     name = models.CharField(max_length=100)
