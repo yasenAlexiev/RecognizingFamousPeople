@@ -132,5 +132,6 @@ class QuizView(View):
 def difficulty(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    return render(request, 'difficulty.html', {'user': request.user})
+    user = CustomUser.objects.get(id=request.user.id)
+    return render(request, 'difficulty.html', {'user': user})
 
