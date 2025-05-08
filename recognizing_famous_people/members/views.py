@@ -68,6 +68,15 @@ def logout_view(request):
 @method_decorator(login_required, name='dispatch')
 class QuizView(View):
     def get(self, request, difficulty):
+        # Initialize or get the guess count from session
+        guess_count = request.session.get('guess_count', 0)
+        
+        # If we've reached 10 guesses, redirect to difficulty page
+        if guess_count >= 10:
+            # Reset the guess count
+            request.session['guess_count'] = 0
+            return redirect('difficulty')
+            
         # Get famous people of the specified difficulty
         famous_people = FamousPerson.objects.filter(difficulty=difficulty)
         
@@ -114,7 +123,9 @@ class QuizView(View):
             'correct_person_name': correct_person.name,
             'correct_image_index': correct_index,
             'difficulty': difficulty,
-            'current_score': user.score
+            'current_score': user.score,
+            'guess_count': guess_count + 1,
+            'total_guesses': 10
         }
         
         return render(request, 'quiz_page.html', context)
@@ -126,6 +137,10 @@ class QuizView(View):
         user = CustomUser.objects.get(id=request.user.id)
         user.score += 1
         user.save()
+        
+        # Increment the guess count
+        guess_count = request.session.get('guess_count', 0) + 1
+        request.session['guess_count'] = guess_count
         
         return JsonResponse({'new_score': user.score})
 

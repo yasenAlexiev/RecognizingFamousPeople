@@ -118,10 +118,26 @@
         .next-button:hover {
             background-color: #1976D2;
         }
+        .progress-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
     <a href="{% url 'difficulty' %}" class="back-button">← Back</a>
+    <div class="progress-display">
+        Question {{ guess_count }} of {{ total_guesses }}
+    </div>
     <div class="score-display">
         Total Score: {{ current_score }}
     </div>
@@ -149,6 +165,8 @@
         let score = {{ current_score }};
         const correctAnswer = {{ correct_image_index }};
         let answered = false;
+        const guessCount = {{ guess_count }};
+        const totalGuesses = {{ total_guesses }};
 
         function checkAnswer(selectedIndex) {
             if (answered) return;
@@ -192,10 +210,19 @@
             }
 
             nextButton.style.display = 'inline-block';
+            
+            // Update next button text if this is the last question
+            if (guessCount >= totalGuesses) {
+                nextButton.textContent = 'Finish Quiz';
+            }
         }
 
         function nextQuestion() {
-            window.location.reload();
+            if (guessCount >= totalGuesses) {
+                window.location.href = "{% url 'difficulty' %}";
+            } else {
+                window.location.reload();
+            }
         }
 
         // Function to get CSRF token from cookies
