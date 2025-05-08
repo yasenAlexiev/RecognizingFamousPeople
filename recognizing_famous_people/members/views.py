@@ -71,10 +71,15 @@ class QuizView(View):
         # Initialize or get the guess count from session
         guess_count = request.session.get('guess_count', 0)
         
+        # Initialize session score if this is the first question
+        if guess_count == 0:
+            request.session['session_score'] = 0
+        
         # If we've reached 10 guesses, redirect to difficulty page
         if guess_count >= 10:
-            # Reset the guess count
+            # Reset the guess count and session score
             request.session['guess_count'] = 0
+            request.session['session_score'] = 0
             return redirect('difficulty')
             
         # Get famous people of the specified difficulty
@@ -114,8 +119,9 @@ class QuizView(View):
         correct_index = random.randint(0, 1)
         correct_person = selected_people[correct_index]
         
-        # Get user's current score
+        # Get user's current score and session score
         user = CustomUser.objects.get(id=request.user.id)
+        session_score = request.session.get('session_score', 0)
         
         context = {
             'image1_url': selected_people[0].image.url,
@@ -124,6 +130,7 @@ class QuizView(View):
             'correct_image_index': correct_index,
             'difficulty': difficulty,
             'current_score': user.score,
+            'session_score': session_score,
             'guess_count': guess_count + 1,
             'total_guesses': 10
         }
@@ -138,11 +145,16 @@ class QuizView(View):
         user.score += 1
         user.save()
         
-        # Increment the guess count
+        # Increment the guess count and session score
         guess_count = request.session.get('guess_count', 0) + 1
+        session_score = request.session.get('session_score', 0) + 1
         request.session['guess_count'] = guess_count
+        request.session['session_score'] = session_score
         
-        return JsonResponse({'new_score': user.score})
+        return JsonResponse({
+            'new_score': user.score,
+            'new_session_score': session_score
+        })
 
 def difficulty(request):
     if not request.user.is_authenticated:

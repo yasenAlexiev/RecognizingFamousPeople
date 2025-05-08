@@ -29,10 +29,12 @@
         .back-button:hover {
             background-color: #555;
         }
-        .score-display {
+        .score-container {
             position: absolute;
             top: 20px;
             right: 20px;
+        }
+        .score-display {
             background-color: #4CAF50;
             color: white;
             padding: 10px 20px;
@@ -40,6 +42,12 @@
             font-size: 18px;
             font-weight: bold;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .session-score {
+            font-size: 24px;
+            color: #2196F3;
+            margin-top: 10px;
+            font-weight: bold;
         }
         .container {
             background-color: white;
@@ -138,8 +146,10 @@
     <div class="progress-display">
         Question {{ guess_count }} of {{ total_guesses }}
     </div>
-    <div class="score-display">
-        Total Score: {{ current_score }}
+    <div class="score-container">
+        <div class="score-display">
+            Total Score: {{ current_score }}
+        </div>
     </div>
     <div class="container">
         <div class="images-container">
@@ -157,12 +167,13 @@
             </div>
         </div>
         <div class="person-name">{{ correct_person_name }}</div>
-        <div class="score">Score: <span id="score">{{ current_score }}</span></div>
+        <div class="session-score">Session Score: <span id="session-score">{{ session_score }}</span></div>
         <button class="next-button" id="nextButton" onclick="nextQuestion()">Next Question</button>
     </div>
 
     <script>
         let score = {{ current_score }};
+        let sessionScore = {{ session_score }};
         const correctAnswer = {{ correct_image_index }};
         let answered = false;
         const guessCount = {{ guess_count }};
@@ -190,6 +201,10 @@
                     if (data.new_score) {
                         score = data.new_score;
                         document.getElementById('score').textContent = score;
+                    }
+                    if (data.new_session_score) {
+                        sessionScore = data.new_session_score;
+                        document.getElementById('session-score').textContent = sessionScore;
                     }
                 })
                 .catch(error => console.error('Error:', error));
