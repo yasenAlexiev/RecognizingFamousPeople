@@ -9,11 +9,6 @@ from django.contrib.auth.models import User
 from .models import FamousPerson, CustomUser
 import random
 
-
-def members(request):
-    template = loader.get_template("home_page.html")
-    return HttpResponse(template.render({}, request))
-
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -22,7 +17,7 @@ def login_view(request):
         
         if user is not None:
             login(request, user)
-            return redirect('home')
+            return redirect('difficulty')
         else:
             return render(request, 'login.html', {
                 'error_message': 'Invalid username or password.'
@@ -62,7 +57,7 @@ def signup_view(request):
         
         # Log the user in
         login(request, user)
-        return redirect('home')
+        return redirect('difficulty')
     
     return render(request, 'signup.html')
 
@@ -112,8 +107,8 @@ class QuizView(View):
         
         return JsonResponse({'new_score': user.score})
 
-def home(request):
+def difficulty(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    return render(request, 'home_page.html')
+    return render(request, 'difficulty.html')
 
