@@ -68,16 +68,38 @@ def logout_view(request):
 @method_decorator(login_required, name='dispatch')
 class QuizView(View):
     def get(self, request, difficulty):
-        # Get two random famous people of the specified difficulty
-        famous_people = list(FamousPerson.objects.filter(difficulty=difficulty))
+        # Get famous people of the specified difficulty
+        famous_people = FamousPerson.objects.filter(difficulty=difficulty)
         
-        if len(famous_people) < 2:
+        if famous_people.count() < 2:
             return render(request, 'error.html', {
                 'message': 'Not enough famous people in the database for this difficulty level.'
             })
         
-        # Randomly select two different people
-        selected_people = random.sample(famous_people, 2)
+        # Select first person randomly
+        selected_first_person = random.sample(list(famous_people), 1)[0]
+        
+        # Select second person based on difficulty
+        if difficulty == 'easy':
+            second_person_queryset = famous_people.filter(gender=selected_first_person.gender).exclude(id=selected_first_person.id)
+        elif difficulty == 'medium':
+            second_person_queryset = famous_people.filter(
+                gender=selected_first_person.gender,
+                skin_color=selected_first_person.skin_color
+            ).exclude(id=selected_first_person.id)
+        elif difficulty == 'hard':
+            second_person_queryset = famous_people.filter(
+                gender=selected_first_person.gender,
+                skin_color=selected_first_person.skin_color
+            ).exclude(id=selected_first_person.id)
+        
+        if second_person_queryset.count() == 0:
+            return render(request, 'error.html', {
+                'message': 'Not enough similar famous people in the database for this difficulty level.'
+            })
+            
+        selected_second_person = random.sample(list(second_person_queryset), 1)[0]
+        selected_people = [selected_first_person, selected_second_person]
         
         # Randomly choose which one will be the correct answer
         correct_index = random.randint(0, 1)
@@ -110,5 +132,5 @@ class QuizView(View):
 def difficulty(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    return render(request, 'difficulty.html')
+    return render(request, 'difficulty.html', {'user': request.user})
 
