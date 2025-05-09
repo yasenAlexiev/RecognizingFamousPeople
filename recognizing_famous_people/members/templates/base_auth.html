@@ -141,25 +141,6 @@
         .auth-link a:hover {
             text-decoration: underline;
         }
-        .fade-out {
-            animation: fadeOut 1s forwards;
-        }
-        @keyframes fadeOut {
-            0% {
-                opacity: 0.3;
-            }
-            100% {
-                opacity: 0;
-            }
-        }
-        @keyframes fadeIn {
-            0% {
-                opacity: 0;
-            }
-            100% {
-                opacity: 0.3;
-            }
-        }
     </style>
     {% block extra_css %}{% endblock %}
     <script>
@@ -191,6 +172,8 @@
                 // Add new image to grid item
                 gridItem.appendChild(newImg);
                 
+                // Start slide out animation for current image
+                
                 // After slide out, start slide in for new image
                 setTimeout(() => {
                     currentImg.classList.add('slide-left');
@@ -201,48 +184,19 @@
                     }, 1000);
                 }, 1000);
             }
-
-            function fadeOutRandomImages() {
-                // Get 10 random unique indices that are different from the sliding ones
-                const fadeIndices = new Set();
-                while(fadeIndices.size < 10) {
-                    const index = Math.floor(Math.random() * gridItems.length);
-                    if (!fadeIndices.has(index)) {
-                        fadeIndices.add(index);
-                    }
-                }
-                
-                // Fade out selected images
-                fadeIndices.forEach(index => {
-                    const img = gridItems[index].querySelector('img');
-                    img.classList.add('fade-out');
-                    
-                    // After fade out, fade in with new image
-                    setTimeout(() => {
-                        const newPerson = getRandomPerson();
-                        img.src = newPerson.imageUrl;
-                        img.alt = newPerson.name;
-                        img.classList.remove('fade-out');
-                        img.classList.add('fade-in');
-                    }, 1000);
-                });
-            }
             
             // Animate 10 random grid items every 2 seconds
             setInterval(() => {
-                // Get 10 random unique indices for sliding
-                const slideIndices = new Set();
-                while(slideIndices.size < 10) {
-                    slideIndices.add(Math.floor(Math.random() * gridItems.length));
+                // Get 10 random unique indices
+                const indices = new Set();
+                while(indices.size < 10) {
+                    indices.add(Math.floor(Math.random() * gridItems.length));
                 }
                 
-                // Animate each selected grid item with slide
-                slideIndices.forEach(index => {
+                // Animate each selected grid item
+                indices.forEach(index => {
                     animateGridItem(gridItems[index]);
                 });
-
-                // Fade out 10 different random images
-                fadeOutRandomImages();
             }, 2000);
         });
     </script>
