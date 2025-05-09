@@ -187,28 +187,32 @@
             const overlay2 = document.getElementById('overlay2');
             const nextButton = document.getElementById('nextButton');
 
-            if (selectedIndex === correctAnswer) {
-                // Make AJAX call to update score in backend
-                fetch(window.location.href, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'Content-Type': 'application/json'
-                    }
+            // Make AJAX call to update score in backend
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    selected_index: selectedIndex,
+                    correct_index: correctAnswer
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.new_score) {
-                        score = data.new_score;
-                        document.getElementById('score').textContent = score;
-                    }
-                    if (data.new_session_score) {
-                        sessionScore = data.new_session_score;
-                        document.getElementById('session-score').textContent = sessionScore;
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.new_score) {
+                    score = data.new_score;
+                    document.getElementById('score').textContent = score;
+                }
+                if (data.new_session_score) {
+                    sessionScore = data.new_session_score;
+                    document.getElementById('session-score').textContent = sessionScore;
+                }
+            })
+            .catch(error => console.error('Error:', error));
 
+            if (selectedIndex === correctAnswer) {
                 if (selectedIndex === 0) {
                     overlay1.classList.add('correct', 'visible');
                 } else {
@@ -223,7 +227,7 @@
                     overlay2.querySelector('.checkmark').textContent = '✗';
                 }
             }
-
+            console.log(sessionScore)
             nextButton.style.display = 'inline-block';
             
             // Update next button text if this is the last question
@@ -234,7 +238,8 @@
 
         function nextQuestion() {
             if (guessCount >= totalGuesses) {
-                window.location.href = "{% url 'difficulty' %}";
+                
+                window.location.href = "{% url 'quiz_results'%}";
             } else {
                 window.location.reload();
             }

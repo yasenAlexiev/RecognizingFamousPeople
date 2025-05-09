@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from .models import FamousPerson, CustomUser
 import random
+import json
 
 def login_view(request):
     if request.method == 'POST':
@@ -65,22 +66,28 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+def difficulty(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    # Reset all quiz-related session variables when returning to difficulty page
+    request.session['guess_count'] = 0
+    request.session['session_score'] = 0
+    
+    user = CustomUser.objects.get(id=request.user.id)
+    return render(request, 'difficulty.html', {'user': user})
+
 @method_decorator(login_required, name='dispatch')
 class QuizView(View):
     def get(self, request, difficulty):
-        # Initialize or get the guess count from session
+        # Get the current guess count
         guess_count = request.session.get('guess_count', 0)
         
-        # Initialize session score if this is the first question
-        if guess_count == 0:
-            request.session['session_score'] = 0
-        
-        # If we've reached 10 guesses, redirect to difficulty page
+        # If we've reached 10 guesses, redirect to results page
         if guess_count >= 10:
-            # Reset the guess count and session score
-            request.session['guess_count'] = 0
-            request.session['session_score'] = 0
-            return redirect('difficulty')
+            # Get the final session score
+            request.session['session_score'] = session_score
+            return redirect('quiz_results')
             
         # Get famous people of the specified difficulty
         famous_people = FamousPerson.objects.filter(difficulty=difficulty)
@@ -123,6 +130,9 @@ class QuizView(View):
         user = CustomUser.objects.get(id=request.user.id)
         session_score = request.session.get('session_score', 0)
         
+        # Increment guess count for every question
+        request.session['guess_count'] = guess_count + 1
+        
         context = {
             'image1_url': selected_people[0].image.url,
             'image2_url': selected_people[1].image.url,
@@ -140,25 +150,61 @@ class QuizView(View):
     def post(self, request, difficulty):
         if not request.user.is_authenticated:
             return JsonResponse({'error': 'User not authenticated'}, status=401)
+        
+        try:
+            data = json.loads(request.body)
+            selected_index = data.get('selected_index')
+            correct_index = data.get('correct_index')
             
-        user = CustomUser.objects.get(id=request.user.id)
-        user.score += 1
-        user.save()
-        
-        # Increment the guess count and session score
-        guess_count = request.session.get('guess_count', 0) + 1
-        session_score = request.session.get('session_score', 0) + 1
-        request.session['guess_count'] = guess_count
-        request.session['session_score'] = session_score
-        
-        return JsonResponse({
-            'new_score': user.score,
-            'new_session_score': session_score
-        })
+            # Only increment scores if the answer is correct
+            if selected_index == correct_index:
+                user = CustomUser.objects.get(id=request.user.id)
+                user.score += 1
+                user.save()
+                
+                # Increment the session score only for correct answers
+                session_score = request.session.get('session_score', 0) + 1
+                request.session['session_score'] = session_score
+                
+                return JsonResponse({
+                    'new_score': user.score,
+                    'new_session_score': session_score
+                })
+            else:
+                # Return current scores without incrementing
+                user = CustomUser.objects.get(id=request.user.id)
+                session_score = request.session.get('session_score', 0)
+                return JsonResponse({
+                    'new_score': user.score,
+                    'new_session_score': session_score
+                })
+                
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
-def difficulty(request):
+def quiz_results(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    user = CustomUser.objects.get(id=request.user.id)
-    return render(request, 'difficulty.html', {'user': user})
+        
+    session_score = request.session.get('session_score', 0)
+    print(session_score)
+    
+    # Generate appropriate message based on score
+    if session_score >= 8:
+        message = "Outstanding! You're a true celebrity expert! 🏆"
+    elif session_score >= 5:
+        message = "Great job! You know your celebrities well! ⭐"
+    else:
+        message = "Keep practicing! You'll get better with time! 💪"
+    
+    # Reset session variables after showing results
+    request.session['guess_count'] = 0
+    request.session['session_score'] = 0
+    
+    return render(request, 'quiz_results.html', {
+        'session_score': session_score,
+        'message': message
+    })
 
