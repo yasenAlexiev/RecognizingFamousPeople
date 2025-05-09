@@ -21,8 +21,8 @@
             width: 100%;
             height: 100%;
             display: grid;
-            grid-template-columns: repeat(15, 1fr);
-            grid-template-rows: repeat(6, 1fr);
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(4, 1fr);
             z-index: -1;
         }
         .grid-item {
@@ -31,6 +31,7 @@
             overflow: hidden;
             opacity: 0.3;
             transition: opacity 0.3s;
+            position: relative;
         }
         .grid-item:hover {
             opacity: 0.5;
@@ -39,6 +40,35 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .slide-left {
+            animation: slideLeft 1s forwards;
+        }
+        .slide-right {
+            animation: slideRight 1s forwards;
+        }
+        @keyframes slideLeft {
+            0% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+        }
+        @keyframes slideRight {
+            0% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
         .container {
             background-color: rgba(255, 255, 255, 0.95);
@@ -111,8 +141,111 @@
         .auth-link a:hover {
             text-decoration: underline;
         }
+        .fade-out {
+            animation: fadeOut 1s forwards;
+        }
+        @keyframes fadeOut {
+            0% {
+                opacity: 0.3;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 0.3;
+            }
+        }
     </style>
     {% block extra_css %}{% endblock %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const gridItems = document.querySelectorAll('.grid-item');
+            const allPeople = [
+                {% for person in random_people %}
+                {
+                    imageUrl: "{{ person.image.url }}",
+                    name: "{{ person.name }}"
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+            
+            function getRandomPerson() {
+                return allPeople[Math.floor(Math.random() * allPeople.length)];
+            }
+            
+            function animateGridItem(gridItem) {
+                const currentImg = gridItem.querySelector('img');
+                const newPerson = getRandomPerson();
+                
+                // Create new image element
+                const newImg = document.createElement('img');
+                newImg.src = newPerson.imageUrl;
+                newImg.alt = newPerson.name;
+                newImg.style.opacity = '0';
+                
+                // Add new image to grid item
+                gridItem.appendChild(newImg);
+                
+                // After slide out, start slide in for new image
+                setTimeout(() => {
+                    currentImg.classList.add('slide-left');
+                    newImg.classList.add('slide-right');
+                    // Remove old image after animation
+                    setTimeout(() => {
+                        currentImg.remove();
+                    }, 1000);
+                }, 1000);
+            }
+
+            function fadeOutRandomImages() {
+                // Get 10 random unique indices that are different from the sliding ones
+                const fadeIndices = new Set();
+                while(fadeIndices.size < 10) {
+                    const index = Math.floor(Math.random() * gridItems.length);
+                    if (!fadeIndices.has(index)) {
+                        fadeIndices.add(index);
+                    }
+                }
+                
+                // Fade out selected images
+                fadeIndices.forEach(index => {
+                    const img = gridItems[index].querySelector('img');
+                    img.classList.add('fade-out');
+                    
+                    // After fade out, fade in with new image
+                    setTimeout(() => {
+                        const newPerson = getRandomPerson();
+                        img.src = newPerson.imageUrl;
+                        img.alt = newPerson.name;
+                        img.classList.remove('fade-out');
+                        img.classList.add('fade-in');
+                    }, 1000);
+                });
+            }
+            
+            // Animate 10 random grid items every 2 seconds
+            setInterval(() => {
+                // Get 10 random unique indices for sliding
+                const slideIndices = new Set();
+                while(slideIndices.size < 10) {
+                    slideIndices.add(Math.floor(Math.random() * gridItems.length));
+                }
+                
+                // Animate each selected grid item with slide
+                slideIndices.forEach(index => {
+                    animateGridItem(gridItems[index]);
+                });
+
+                // Fade out 10 different random images
+                fadeOutRandomImages();
+            }, 2000);
+        });
+    </script>
 </head>
 <body>
     <div class="background-grid">

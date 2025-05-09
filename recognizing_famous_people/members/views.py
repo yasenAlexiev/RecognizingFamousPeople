@@ -34,6 +34,7 @@ def login_view(request):
     
     # Get random images for the background
     random_people = get_random_images()
+    print(random_people[0].image.url)
     
     return render(request, 'login.html', {
         'error_message': error_message,
