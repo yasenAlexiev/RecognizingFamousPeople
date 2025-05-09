@@ -95,7 +95,13 @@ def difficulty(request):
     request.session['session_score'] = 0
     
     user = CustomUser.objects.get(id=request.user.id)
-    return render(request, 'difficulty.html', {'user': user})
+    # Get random people for the conveyor belt
+    random_people = get_random_images(40)  # Get 40 images for the conveyor belt
+    
+    return render(request, 'difficulty.html', {
+        'user': user,
+        'random_people': random_people
+    })
 
 @method_decorator(login_required, name='dispatch')
 class QuizView(View):
