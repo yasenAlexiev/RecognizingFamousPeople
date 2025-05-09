@@ -106,7 +106,6 @@ class Command(BaseCommand):
             "Ernest Hemingway":  ("male",   "white", "easy"),
             "Mark Twain":        ("male",   "white", "easy"),
             "Charles Dickens":   ("male",   "white", "easy"),
-            "Jane Austen":       ("female", "white", "easy"),
             
             # Famous directors (easy)
             "Steven Spielberg":  ("male",   "white", "easy"),
@@ -352,7 +351,6 @@ class Command(BaseCommand):
 
             # Peaky Blinders (easy/medium)
             "Cillian Murphy":    ("male",   "white", "easy"),
-            "Tom Hardy":         ("male",   "white", "easy"),
             "Paul Anderson":     ("male",   "white", "medium"),
             "Sophie Rundle":     ("female", "white", "medium"),
             "Helen McCrory":     ("female", "white", "medium"),
@@ -402,7 +400,6 @@ class Command(BaseCommand):
             "Chadwick Boseman":  ("male",   "black", "easy"),
             "Michael B. Jordan": ("male",   "black", "easy"),
             "Lupita Nyong'o":    ("female", "black", "medium"),
-            "Danai Gurira":      ("female", "black", "medium"),
             "Florence Kasumba":  ("female", "black", "medium"),
             "Paul Rudd":         ("male",   "white", "easy"),
             "Evangeline Lilly":  ("female", "white", "medium"),
@@ -418,16 +415,12 @@ class Command(BaseCommand):
             # Famous Stand-up Comedians
             "Dave Chappelle":    ("male",   "black", "easy"),
             "Kevin Hart":        ("male",   "black", "easy"),
-            "Jerry Seinfeld":    ("male",   "white", "easy"),
             "Chris Rock":        ("male",   "black", "easy"),
             "Louis C.K.":        ("male",   "white", "medium"),
             "Bill Burr":         ("male",   "white", "medium"),
             "Amy Schumer":       ("female", "white", "medium"),
-            "Hannah Gadsby":     ("female", "white", "medium"),
-            "John Mulaney":      ("male",   "white", "medium"),
             "Ali Wong":          ("female", "asian", "medium"),
             "Ricky Gervais":     ("male",   "white", "medium"),
-            "John Cleese":       ("male",   "white", "medium"),
             "Graham Norton":     ("male",   "white", "medium"),
             "John Oliver":       ("male",   "white", "medium"),
             "Samantha Bee":      ("female", "white", "medium"),
@@ -440,28 +433,7 @@ class Command(BaseCommand):
             "John Travolta":     ("male",   "white", "medium"),
             "Jimmy Carr":        ("male",   "white", "medium"),
             "Jim Carrey":        ("male",   "white", "medium"),
-            "Jim Gaffigan":      ("male",   "white", "medium"),
-            "Jim Jefferies":     ("male",   "white", "medium"),
             "Matt Rife":         ("male",   "white", "medium"),
-
-            # Additional Comedians and Entertainers
-            "Ricky Gervais":     ("male",   "white", "medium"),
-            "John Cleese":       ("male",   "white", "medium"),
-            "Graham Norton":     ("male",   "white", "medium"),
-            "John Oliver":       ("male",   "white", "medium"),
-            "Samantha Bee":      ("female", "white", "medium"),
-            "James Corden":      ("male",   "white", "medium"),
-            "Pete Davidson":     ("male",   "white", "medium"),
-            "John Mayer":        ("male",   "white", "medium"),
-            "John Legend":       ("male",   "black", "medium"),
-            "John Krasinski":    ("male",   "white", "medium"),
-            "John Cena":         ("male",   "white", "medium"),
-            "John Travolta":     ("male",   "white", "medium"),
-            "Jimmy Carr":        ("male",   "white", "medium"),
-            "Jim Carrey":        ("male",   "white", "medium"),
-            "Jim Gaffigan":      ("male",   "white", "medium"),
-            "Jim Jefferies":     ("male",   "white", "medium"),
-            "Matt Rife":         ("male",   "white", "medium")
         }
 
         people_to_download = list(famous_people.items())
