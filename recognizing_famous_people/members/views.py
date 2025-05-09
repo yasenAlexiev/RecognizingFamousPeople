@@ -9,6 +9,14 @@ from django.contrib.auth.models import User
 from .models import FamousPerson, CustomUser
 import random
 import json
+from django.views.decorators.csrf import csrf_exempt
+
+def get_random_images(count=90):
+    """Get random images from the database for the login page background."""
+    all_people = list(FamousPerson.objects.all())
+    if len(all_people) < count:
+        return all_people
+    return random.sample(all_people, count)
 
 def login_view(request):
     if request.method == 'POST':
@@ -20,11 +28,17 @@ def login_view(request):
             login(request, user)
             return redirect('difficulty')
         else:
-            return render(request, 'login.html', {
-                'error_message': 'Invalid username or password.'
-            })
+            error_message = "Invalid username or password"
+    else:
+        error_message = None
     
-    return render(request, 'login.html')
+    # Get random images for the background
+    random_people = get_random_images()
+    
+    return render(request, 'login.html', {
+        'error_message': error_message,
+        'random_people': random_people
+    })
 
 def signup_view(request):
     if request.method == 'POST':
@@ -35,17 +49,20 @@ def signup_view(request):
         
         if password1 != password2:
             return render(request, 'signup.html', {
-                'error_message': 'Passwords do not match.'
+                'error_message': 'Passwords do not match.',
+                'random_people': get_random_images()
             })
         
         if CustomUser.objects.filter(username=username).exists():
             return render(request, 'signup.html', {
-                'error_message': 'Username already exists.'
+                'error_message': 'Username already exists.',
+                'random_people': get_random_images()
             })
         
         if CustomUser.objects.filter(email=email).exists():
             return render(request, 'signup.html', {
-                'error_message': 'Email already registered.'
+                'error_message': 'Email already registered.',
+                'random_people': get_random_images()
             })
         
         # Create the user
@@ -60,7 +77,9 @@ def signup_view(request):
         login(request, user)
         return redirect('difficulty')
     
-    return render(request, 'signup.html')
+    return render(request, 'signup.html', {
+        'random_people': get_random_images()
+    })
 
 def logout_view(request):
     logout(request)
