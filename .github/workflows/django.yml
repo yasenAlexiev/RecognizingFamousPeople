@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -24,6 +24,7 @@ jobs:
         cache: 'pip'
     
     - name: Install Dependencies
+      working-directory: recognizing_famous_people
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
@@ -42,10 +43,21 @@ jobs:
         SECRET_KEY: test-key
         DEBUG: True
       run: |
-        python manage.py test
+        python manage.py test members
 
     - name: Check Code Style
+      working-directory: recognizing_famous_people
       run: |
         pip install flake8
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.python-version }}
+        path: |
+          recognizing_famous_people/test-results/
+          recognizing_famous_people/coverage/
+        if-no-files-found: error
