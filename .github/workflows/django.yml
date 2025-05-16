@@ -67,4 +67,4 @@ jobs:
         path: |
           recognizing_famous_people/test-results/
           recognizing_famous_people/coverage/
-        if-no-files-found: error
+        if-no-files-found: ignore
