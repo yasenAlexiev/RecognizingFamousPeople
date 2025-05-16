@@ -196,17 +196,20 @@
 <body>
     <a href="{% url 'difficulty' %}" class="back-button">← Back</a>
     <div class="progress-display">
-        Streak: {{ session_score }}
+        Best {{ difficulty|title }}: 
+        {% if difficulty == 'easy' %}
+            {{ best_score_easy }}
+        {% elif difficulty == 'medium' %}
+            {{ best_score_medium }}
+        {% else %}
+            {{ best_score_hard }}
+        {% endif %}
     </div>
     <div class="score-container">
         <div class="score-display">
             Total Score: {{ current_score }}
         </div>
-        <div class="best-scores">
-            <div class="best-score">Best Easy: {{ best_score_easy }}</div>
-            <div class="best-score">Best Medium: {{ best_score_medium }}</div>
-            <div class="best-score">Best Hard: {{ best_score_hard }}</div>
-        </div>
+        
     </div>
     <div class="container">
         <div class="images-container">
