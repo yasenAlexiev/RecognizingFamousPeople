@@ -67,6 +67,8 @@
             width: 400px;
             height: 400px;
             cursor: pointer;
+            border-radius: 10px;
+            overflow: hidden;
         }
         .person-image {
             width: 100%;
@@ -74,6 +76,7 @@
             object-fit: cover;
             border-radius: 10px;
             transition: all 0.3s ease;
+            pointer-events: none;
         }
         .overlay {
             position: absolute;
@@ -87,6 +90,7 @@
             border-radius: 10px;
             opacity: 0;
             transition: opacity 0.3s ease;
+            pointer-events: none;
         }
         .correct {
             background-color: rgba(76, 175, 80, 0.7);
@@ -125,12 +129,65 @@
             font-weight: bold;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .game-over.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .game-over-content {
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .game-over-title {
+            font-size: 36px;
+            color: #f44336;
+            margin-bottom: 20px;
+        }
+        .final-score {
+            font-size: 48px;
+            color: #2196F3;
+            margin: 20px 0;
+        }
+        .restart-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .restart-button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
     <a href="{% url 'difficulty' %}" class="back-button">← Back</a>
     <div class="progress-display">
-        Question {{ guess_count }} of {{ total_guesses }}
+        Streak: {{ session_score }}
     </div>
     <div class="score-container">
         <div class="score-display">
@@ -156,13 +213,19 @@
         <div class="session-score">Session Score: <span id="session-score">{{ session_score }}</span></div>
     </div>
 
+    <div class="game-over" id="gameOver">
+        <div class="game-over-content">
+            <h1 class="game-over-title">Game Over!</h1>
+            <div class="final-score">Final Score: <span id="finalScore">0</span></div>
+            <a href="{% url 'difficulty' %}" class="restart-button">Play Again</a>
+        </div>
+    </div>
+
     <script>
         let score = {{ current_score }};
         let sessionScore = {{ session_score }};
         const correctAnswer = {{ correct_image_index }};
         let answered = false;
-        const guessCount = {{ guess_count }};
-        const totalGuesses = {{ total_guesses }};
 
         function checkAnswer(selectedIndex) {
             if (answered) return;
@@ -171,6 +234,32 @@
             const overlay1 = document.getElementById('overlay1');
             const overlay2 = document.getElementById('overlay2');
 
+            // Show feedback immediately
+            if (selectedIndex === correctAnswer) {
+                if (selectedIndex === 0) {
+                    overlay1.classList.add('correct', 'visible');
+                } else {
+                    overlay2.classList.add('correct', 'visible');
+                }
+            } else {
+                if (selectedIndex === 0) {
+                    overlay1.classList.add('incorrect', 'visible');
+                    overlay1.querySelector('.checkmark').textContent = '✗';
+                } else {
+                    overlay2.classList.add('incorrect', 'visible');
+                    overlay2.querySelector('.checkmark').textContent = '✗';
+                }
+            }
+            // Handle next question or game over
+            setTimeout(() => {
+                if (selectedIndex === correctAnswer) {
+                    // Force a complete page reload
+                    window.location.reload(true);
+                } else {
+                    document.getElementById('finalScore').textContent = sessionScore;
+                    document.getElementById('gameOver').classList.add('visible');
+                }
+            }, 1500);
             // Make AJAX call to update score in backend
             fetch(window.location.href, {
                 method: 'POST',
@@ -193,33 +282,14 @@
                     sessionScore = data.new_session_score;
                     document.getElementById('session-score').textContent = sessionScore;
                 }
+
+             
             })
-            .catch(error => console.error('Error:', error));
-
-            if (selectedIndex === correctAnswer) {
-                if (selectedIndex === 0) {
-                    overlay1.classList.add('correct', 'visible');
-                } else {
-                    overlay2.classList.add('correct', 'visible');
-                }
-            } else {
-                if (selectedIndex === 0) {
-                    overlay1.classList.add('incorrect', 'visible');
-                    overlay1.querySelector('.checkmark').textContent = '✗';
-                } else {
-                    overlay2.classList.add('incorrect', 'visible');
-                    overlay2.querySelector('.checkmark').textContent = '✗';
-                }
-            }
-
-            // Wait for 1.5 seconds before loading the next question
-            setTimeout(() => {
-                if (guessCount >= totalGuesses) {
-                    window.location.href = "{% url 'quiz_results'%}";
-                } else {
-                    window.location.reload();
-                }
-            }, 1500);
+            .catch(error => {
+                console.error('Error:', error);
+                // Reset answered state in case of error
+                answered = false;
+            });
         }
 
         // Function to get CSRF token from cookies

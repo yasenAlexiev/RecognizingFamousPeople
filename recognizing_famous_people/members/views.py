@@ -106,65 +106,57 @@ def difficulty(request):
 @method_decorator(login_required, name='dispatch')
 class QuizView(View):
     def get(self, request, difficulty):
-        # Get the current guess count and session score
-        guess_count = request.session.get('guess_count', 0)
+        # Get the current session score
         session_score = request.session.get('session_score', 0)
         
-        # If we've reached 10 guesses, redirect to results page
-        if guess_count >= 10:
-            return redirect('quiz_results')
+        # Get famous people of the specified difficulty
+        famous_people = FamousPerson.objects.filter(difficulty=difficulty)
         
-        # Check if we have stored question data in the session
-        current_question = request.session.get('current_question')
+        if famous_people.count() < 2:
+            return render(request, 'error.html', {
+                'message': 'Not enough famous people in the database for this difficulty level.'
+            })
         
-        if not current_question:
-            # Get famous people of the specified difficulty
-            famous_people = FamousPerson.objects.filter(difficulty=difficulty)
+        # Select first person randomly
+        selected_first_person = random.sample(list(famous_people), 1)[0]
+        
+        # Select second person based on difficulty
+        if difficulty == 'easy':
+            second_person_queryset = famous_people.filter(gender=selected_first_person.gender).exclude(id=selected_first_person.id)
+        elif difficulty == 'medium':
+            second_person_queryset = famous_people.filter(
+                gender=selected_first_person.gender,
+                skin_color=selected_first_person.skin_color
+            ).exclude(id=selected_first_person.id)
+        elif difficulty == 'hard':
+            second_person_queryset = famous_people.filter(
+                gender=selected_first_person.gender,
+                skin_color=selected_first_person.skin_color
+            ).exclude(id=selected_first_person.id)
+        
+        if second_person_queryset.count() == 0:
+            return render(request, 'error.html', {
+                'message': 'Not enough similar famous people in the database for this difficulty level.'
+            })
             
-            if famous_people.count() < 2:
-                return render(request, 'error.html', {
-                    'message': 'Not enough famous people in the database for this difficulty level.'
-                })
-            
-            # Select first person randomly
-            selected_first_person = random.sample(list(famous_people), 1)[0]
-            
-            # Select second person based on difficulty
-            if difficulty == 'easy':
-                second_person_queryset = famous_people.filter(gender=selected_first_person.gender).exclude(id=selected_first_person.id)
-            elif difficulty == 'medium':
-                second_person_queryset = famous_people.filter(
-                    gender=selected_first_person.gender,
-                    skin_color=selected_first_person.skin_color
-                ).exclude(id=selected_first_person.id)
-            elif difficulty == 'hard':
-                second_person_queryset = famous_people.filter(
-                    gender=selected_first_person.gender,
-                    skin_color=selected_first_person.skin_color
-                ).exclude(id=selected_first_person.id)
-            
-            if second_person_queryset.count() == 0:
-                return render(request, 'error.html', {
-                    'message': 'Not enough similar famous people in the database for this difficulty level.'
-                })
-                
-            selected_second_person = random.sample(list(second_person_queryset), 1)[0]
-            selected_people = [selected_first_person, selected_second_person]
-            
-            # Randomly choose which one will be the correct answer
-            correct_index = random.randint(0, 1)
-            correct_person = selected_people[correct_index]
-            
-            # Store the current question data in the session
-            current_question = {
-                'image1_url': selected_people[0].image.url,
-                'image2_url': selected_people[1].image.url,
-                'correct_person_name': correct_person.name,
-                'correct_image_index': correct_index,
-                'person1_id': selected_people[0].id,
-                'person2_id': selected_people[1].id
-            }
-            request.session['current_question'] = current_question
+        selected_second_person = random.sample(list(second_person_queryset), 1)[0]
+        selected_people = [selected_first_person, selected_second_person]
+        
+        # Randomly choose which one will be the correct answer
+        correct_index = random.randint(0, 1)
+        correct_person = selected_people[correct_index]
+
+        # Store the current question data in the session
+        current_question = {
+            'image1_url': selected_people[0].image.url,
+            'image2_url': selected_people[1].image.url,
+            'correct_person_name': correct_person.name,
+            'correct_image_index': correct_index,
+            'person1_id': selected_people[0].id,
+            'person2_id': selected_people[1].id
+        }
+        request.session['current_question'] = current_question
+    
         
         # Get user's current score
         user = CustomUser.objects.get(id=request.user.id)
@@ -176,9 +168,7 @@ class QuizView(View):
             'correct_image_index': current_question['correct_image_index'],
             'difficulty': difficulty,
             'current_score': user.score,
-            'session_score': session_score,
-            'guess_count': guess_count,
-            'total_guesses': 10
+            'session_score': session_score
         }
         
         return render(request, 'quiz_page.html', context)
@@ -194,28 +184,30 @@ class QuizView(View):
             
             # Get current session score
             session_score = request.session.get('session_score', 0)
+            user = CustomUser.objects.get(id=request.user.id)
             
             # Only increment scores if the answer is correct
             if selected_index == correct_index:
-                user = CustomUser.objects.get(id=request.user.id)
                 user.score += 1
                 user.save()
                 
                 # Increment the session score only for correct answers
                 session_score += 1
                 request.session['session_score'] = session_score
-            
-            # Clear the current question from session
-            request.session.pop('current_question', None)
-            
-            # Increment guess count
-            guess_count = request.session.get('guess_count', 0)
-            request.session['guess_count'] = guess_count + 1
-            
-            return JsonResponse({
-                'new_score': user.score,
-                'new_session_score': session_score
-            })
+                
+                # Return success response
+                return JsonResponse({
+                    'new_score': user.score,
+                    'new_session_score': session_score,
+                    'game_over': False
+                })
+            else:
+                # Game over - wrong answer
+                return JsonResponse({
+                    'new_score': user.score,
+                    'new_session_score': session_score,
+                    'game_over': True
+                })
                 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
