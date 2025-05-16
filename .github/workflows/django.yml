@@ -61,10 +61,10 @@ jobs:
 
     - name: Upload Test Results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: test-results-${{ matrix.python-version }}
         path: |
           recognizing_famous_people/test-results/
           recognizing_famous_people/coverage/
-        if-no-files-found: ignore
+        if-no-files-found: error
