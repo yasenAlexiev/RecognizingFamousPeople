@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Famous People Recognition Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -9,9 +10,27 @@
             margin: 0 auto;
             padding: 20px;
             text-align: center;
-            background-color: #f5f5f5;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
             position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;  /* Prevent horizontal scroll */
+            box-sizing: border-box;  /* Include padding in width calculation */
         }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
         .top-right {
             position: absolute;
             top: 20px;
@@ -23,33 +42,44 @@
         .score-display {
             background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
+            padding: 5px 10px;
             border-radius: 5px;
             font-size: 18px;
             font-weight: bold;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            height: 45px;
+            display: flex;
+            align-items: center;
         }
         .logout-button {
             background-color: #f44336;
             color: white;
-            padding: 10px 20px;
+            padding: 0;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: bold;
             text-decoration: none;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
         }
         .logout-button:hover {
             background-color: #d32f2f;
         }
         .container {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-top: 50px;
-            margin-bottom: 170px;
+            margin-bottom: 0;
+            backdrop-filter: blur(5px);
+            width: 100%;
+            box-sizing: border-box;  /* Include padding in width calculation */
         }
         h1 {
             color: #333;
@@ -89,16 +119,27 @@
         .hard {
             background-color: #f44336;
         }
-        .conveyor-belt {
+        .conveyor-section {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 150px;
-            background: rgba(0, 0, 0, 0.1);
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 150px;
+            box-sizing: border-box;  /* Include padding in width calculation */
+        }
+        
+        .conveyor-belt {
+            width: 100%;
+            height: 300px;
+            background: transparent;  /* Make it transparent to show the gradient */
             overflow: hidden;
             display: flex;
             align-items: center;
+            justify-content: center;
         }
         
         .conveyor-track {
@@ -110,12 +151,12 @@
         }
         
         .conveyor-item {
-            flex: 0 0 150px;
-            height: 150px;
-            margin: 0 10px;
+            flex: 0 0 300px;  /* Doubled width */
+            height: 300px;    /* Doubled height */
+            margin: 0 20px;   /* Increased spacing */
             overflow: hidden;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 20px;  /* Increased border radius */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: transform 0.3s;
         }
         
@@ -145,7 +186,9 @@
         <div class="score-display">
             Total Score: {{ user.score }}
         </div>
-        <a href="{% url 'logout' %}" class="logout-button">Logout</a>
+        <a href="{% url 'logout' %}" class="logout-button" title="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
     </div>
     <div class="container">
         <h1>Welcome to Famous People Recognition Game</h1>
@@ -159,18 +202,20 @@
         </div>
     </div>
     
-    <div class="conveyor-belt">
-        <div class="conveyor-track">
-            {% for person in random_people %}
-            <div class="conveyor-item">
-                <img src="{{ person.image.url }}" alt="{{ person.name }}">
+    <div class="conveyor-section">
+        <div class="conveyor-belt">
+            <div class="conveyor-track">
+                {% for person in random_people %}
+                <div class="conveyor-item">
+                    <img src="{{ person.image.url }}" alt="{{ person.name }}">
+                </div>
+                {% endfor %}
+                {% for person in random_people %}
+                <div class="conveyor-item">
+                    <img src="{{ person.image.url }}" alt="{{ person.name }}">
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-            {% for person in random_people %}
-            <div class="conveyor-item">
-                <img src="{{ person.image.url }}" alt="{{ person.name }}">
-            </div>
-            {% endfor %}
         </div>
     </div>
 
