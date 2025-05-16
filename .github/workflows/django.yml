@@ -30,11 +30,13 @@ jobs:
         pip install pytest pytest-django
     
     - name: Run Migrations
+      working-directory: recognizing_famous_people
       run: |
         python manage.py makemigrations
         python manage.py migrate
     
     - name: Run Tests
+      working-directory: recognizing_famous_people
       env:
         DJANGO_SETTINGS_MODULE: recognizing_famous_people.settings
         SECRET_KEY: test-key
