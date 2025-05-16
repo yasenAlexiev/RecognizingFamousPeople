@@ -52,6 +52,13 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+    - name: Create Test Directories
+      if: always()
+      working-directory: recognizing_famous_people
+      run: |
+        mkdir -p test-results/
+        mkdir -p coverage/
+
     - name: Upload Test Results
       if: always()
       uses: actions/upload-artifact@v3
