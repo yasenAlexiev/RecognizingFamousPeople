@@ -182,6 +182,15 @@
             background-color: #45a049;
             transform: scale(1.05);
         }
+        .best-scores {
+            margin-top: 10px;
+            text-align: right;
+        }
+        .best-score {
+            font-size: 16px;
+            color: #666;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -192,6 +201,11 @@
     <div class="score-container">
         <div class="score-display">
             Total Score: {{ current_score }}
+        </div>
+        <div class="best-scores">
+            <div class="best-score">Best Easy: {{ best_score_easy }}</div>
+            <div class="best-score">Best Medium: {{ best_score_medium }}</div>
+            <div class="best-score">Best Hard: {{ best_score_hard }}</div>
         </div>
     </div>
     <div class="container">
@@ -250,6 +264,7 @@
                     overlay2.querySelector('.checkmark').textContent = '✗';
                 }
             }
+            
             // Handle next question or game over
             setTimeout(() => {
                 if (selectedIndex === correctAnswer) {
@@ -260,6 +275,8 @@
                     document.getElementById('gameOver').classList.add('visible');
                 }
             }, 1500);
+
+
             // Make AJAX call to update score in backend
             fetch(window.location.href, {
                 method: 'POST',
@@ -282,8 +299,18 @@
                     sessionScore = data.new_session_score;
                     document.getElementById('session-score').textContent = sessionScore;
                 }
+                if (data.new_best_score) {
+                    // Update the best score display
+                    const difficulty = '{{ difficulty }}';
+                    const bestScoreElement = document.querySelector(`.best-score:nth-child(${
+                        difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3
+                    })`);
+                    if (bestScoreElement) {
+                        bestScoreElement.textContent = `Best ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}: ${data.new_best_score}`;
+                    }
+                }
 
-             
+               
             })
             .catch(error => {
                 console.error('Error:', error);

@@ -145,7 +145,7 @@ class QuizView(View):
         # Randomly choose which one will be the correct answer
         correct_index = random.randint(0, 1)
         correct_person = selected_people[correct_index]
-
+        
         # Store the current question data in the session
         current_question = {
             'image1_url': selected_people[0].image.url,
@@ -156,9 +156,8 @@ class QuizView(View):
             'person2_id': selected_people[1].id
         }
         request.session['current_question'] = current_question
-    
         
-        # Get user's current score
+        # Get user's current score and best scores
         user = CustomUser.objects.get(id=request.user.id)
         
         context = {
@@ -168,7 +167,10 @@ class QuizView(View):
             'correct_image_index': current_question['correct_image_index'],
             'difficulty': difficulty,
             'current_score': user.score,
-            'session_score': session_score
+            'session_score': session_score,
+            'best_score_easy': user.best_score_easy,
+            'best_score_medium': user.best_score_medium,
+            'best_score_hard': user.best_score_hard
         }
         
         return render(request, 'quiz_page.html', context)
@@ -195,10 +197,17 @@ class QuizView(View):
                 session_score += 1
                 request.session['session_score'] = session_score
                 
-                # Return success response
+                # Update best score if current session score is higher
+                best_score_field = f'best_score_{difficulty}'
+                current_best = getattr(user, best_score_field)
+                if session_score > current_best:
+                    setattr(user, best_score_field, session_score)
+                    user.save()
+                
                 return JsonResponse({
                     'new_score': user.score,
                     'new_session_score': session_score,
+                    'new_best_score': getattr(user, best_score_field),
                     'game_over': False
                 })
             else:
